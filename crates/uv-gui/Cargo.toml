@@ -46,6 +46,7 @@ thiserror = { workspace = true }
 # Utilities
 tracing = { workspace = true }
 url = { workspace = true }
+fs-err = { workspace = true }
 
 [dev-dependencies]
 insta = { workspace = true }

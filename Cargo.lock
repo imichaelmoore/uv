@@ -9210,6 +9210,7 @@ name = "uv-gui"
 version = "0.0.7"
 dependencies = [
  "anyhow",
+ "fs-err",
  "futures",
  "gpui",
  "insta",

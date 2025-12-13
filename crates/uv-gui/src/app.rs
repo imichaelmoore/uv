@@ -143,7 +143,7 @@ impl MainWindowView {
                 project.pyproject_path = Some(pyproject_path.clone());
 
                 // Try to read project name from pyproject.toml
-                if let Ok(content) = std::fs::read_to_string(&pyproject_path) {
+                if let Ok(content) = fs_err::read_to_string(&pyproject_path) {
                     if let Some(name) = extract_project_name(&content) {
                         project.name = name;
                     }
