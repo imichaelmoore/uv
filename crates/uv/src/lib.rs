@@ -552,6 +552,10 @@ async fn run(mut cli: Cli) -> Result<ExitStatus> {
             printer,
             args.no_pager,
         ),
+        Commands::Gui(args) => {
+            // Launch the graphical user interface
+            commands::gui(args, printer)
+        }
         Commands::Pip(PipNamespace {
             command: PipCommand::Compile(args),
         }) => {
