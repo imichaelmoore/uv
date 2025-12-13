@@ -11,12 +11,12 @@ use uv_cache::{CacheArgs, Refresh};
 use uv_cli::comma::CommaSeparatedRequirements;
 use uv_cli::{
     AddArgs, AuthLoginArgs, AuthLogoutArgs, AuthTokenArgs, ColorChoice, ExternalCommand,
-    GlobalArgs, InitArgs, ListFormat, LockArgs, Maybe, PipCheckArgs, PipCompileArgs, PipFreezeArgs,
-    PipInstallArgs, PipListArgs, PipShowArgs, PipSyncArgs, PipTreeArgs, PipUninstallArgs,
-    PythonFindArgs, PythonInstallArgs, PythonListArgs, PythonListFormat, PythonPinArgs,
-    PythonUninstallArgs, PythonUpgradeArgs, RemoveArgs, RunArgs, SyncArgs, SyncFormat, ToolDirArgs,
-    ToolInstallArgs, ToolListArgs, ToolRunArgs, ToolUninstallArgs, TreeArgs, VenvArgs, VersionArgs,
-    VersionBumpSpec, VersionFormat,
+    GlobalArgs, InitArgs, ListFormat, LockArgs, Maybe, PipCheckArgs, PipCompileArgs,
+    PipDownloadArgs, PipFreezeArgs, PipInstallArgs, PipListArgs, PipShowArgs, PipSyncArgs,
+    PipTreeArgs, PipUninstallArgs, PythonFindArgs, PythonInstallArgs, PythonListArgs,
+    PythonListFormat, PythonPinArgs, PythonUninstallArgs, PythonUpgradeArgs, RemoveArgs, RunArgs,
+    SyncArgs, SyncFormat, ToolDirArgs, ToolInstallArgs, ToolListArgs, ToolRunArgs,
+    ToolUninstallArgs, TreeArgs, VenvArgs, VersionArgs, VersionBumpSpec, VersionFormat,
 };
 use uv_cli::{
     AuthorFrom, BuildArgs, ExportArgs, FormatArgs, PublishArgs, PythonDirArgs,
@@ -2684,6 +2684,101 @@ impl PipInstallSettings {
                     verify_hashes: flag(verify_hashes, no_verify_hashes, "verify-hashes"),
                     torch_backend,
                     ..PipOptions::from(installer)
+                },
+                filesystem,
+                environment,
+            ),
+        }
+    }
+}
+
+/// The resolved settings to use for a `pip download` invocation.
+#[derive(Debug, Clone)]
+pub(crate) struct PipDownloadSettings {
+    pub(crate) package: Vec<String>,
+    pub(crate) requirements: Vec<PathBuf>,
+    pub(crate) editables: Vec<String>,
+    pub(crate) constraints: Vec<PathBuf>,
+    pub(crate) overrides: Vec<PathBuf>,
+    pub(crate) build_constraints: Vec<PathBuf>,
+    pub(crate) dest: Option<PathBuf>,
+    pub(crate) refresh: Refresh,
+    pub(crate) settings: PipSettings,
+}
+
+impl PipDownloadSettings {
+    /// Resolve the [`PipDownloadSettings`] from the CLI and filesystem configuration.
+    pub(crate) fn resolve(
+        args: PipDownloadArgs,
+        filesystem: Option<FilesystemOptions>,
+        environment: EnvironmentOptions,
+    ) -> Self {
+        let PipDownloadArgs {
+            package,
+            requirements,
+            editable,
+            constraints,
+            overrides,
+            build_constraints,
+            extra,
+            all_extras,
+            no_all_extras,
+            resolver,
+            refresh,
+            no_deps,
+            deps,
+            require_hashes,
+            no_require_hashes,
+            verify_hashes,
+            no_verify_hashes,
+            python,
+            system,
+            no_system,
+            no_build,
+            build,
+            no_binary,
+            only_binary,
+            python_version,
+            python_platform,
+            dest,
+            torch_backend,
+            compat_args: _,
+        } = args;
+
+        Self {
+            package,
+            requirements,
+            editables: editable,
+            constraints: constraints
+                .into_iter()
+                .filter_map(Maybe::into_option)
+                .collect(),
+            overrides: overrides
+                .into_iter()
+                .filter_map(Maybe::into_option)
+                .collect(),
+            build_constraints: build_constraints
+                .into_iter()
+                .filter_map(Maybe::into_option)
+                .collect(),
+            dest,
+            refresh: Refresh::from(refresh),
+            settings: PipSettings::combine(
+                PipOptions {
+                    python: python.and_then(Maybe::into_option),
+                    system: flag(system, no_system, "system"),
+                    no_build: flag(no_build, build, "build"),
+                    no_binary,
+                    only_binary,
+                    extra,
+                    all_extras: flag(all_extras, no_all_extras, "all-extras"),
+                    no_deps: flag(no_deps, deps, "deps"),
+                    python_version,
+                    python_platform,
+                    require_hashes: flag(require_hashes, no_require_hashes, "require-hashes"),
+                    verify_hashes: flag(verify_hashes, no_verify_hashes, "verify-hashes"),
+                    torch_backend,
+                    ..PipOptions::from(resolver)
                 },
                 filesystem,
                 environment,

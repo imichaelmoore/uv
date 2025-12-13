@@ -1091,6 +1091,14 @@ impl TestContext {
         command
     }
 
+    /// Create a `pip download` command for testing.
+    pub fn pip_download(&self) -> Command {
+        let mut command = Self::new_command();
+        command.arg("pip").arg("download");
+        self.add_shared_options(&mut command, true);
+        command
+    }
+
     /// Create a `pip uninstall` command with options shared across scenarios.
     pub fn pip_uninstall(&self) -> Command {
         let mut command = Self::new_command();

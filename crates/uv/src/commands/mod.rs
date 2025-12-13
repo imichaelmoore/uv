@@ -22,6 +22,7 @@ pub(crate) use cache_size::cache_size;
 pub(crate) use help::help;
 pub(crate) use pip::check::pip_check;
 pub(crate) use pip::compile::pip_compile;
+pub(crate) use pip::download::pip_download;
 pub(crate) use pip::freeze::pip_freeze;
 pub(crate) use pip::install::pip_install;
 pub(crate) use pip::list::pip_list;
