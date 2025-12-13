@@ -61,6 +61,9 @@ mod pip_compile;
 mod pip_compile_scenarios;
 
 #[cfg(all(feature = "python", feature = "pypi"))]
+mod pip_download;
+
+#[cfg(all(feature = "python", feature = "pypi"))]
 mod pip_freeze;
 
 #[cfg(all(feature = "python", feature = "pypi"))]

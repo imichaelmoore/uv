@@ -896,6 +896,89 @@ async fn run(mut cli: Cli) -> Result<ExitStatus> {
             .await
         }
         Commands::Pip(PipNamespace {
+            command: PipCommand::Download(args),
+        }) => {
+            args.compat_args.validate()?;
+
+            // Resolve the settings from the command-line arguments and workspace configuration.
+            let args = settings::PipDownloadSettings::resolve(args, filesystem, environment);
+            show_settings!(args);
+
+            // Initialize the cache.
+            let cache = cache.init().await?.with_refresh(args.refresh);
+
+            let mut requirements = Vec::with_capacity(
+                args.package.len() + args.editables.len() + args.requirements.len(),
+            );
+            for package in args.package {
+                requirements.push(RequirementsSource::from_package_argument(&package)?);
+            }
+            for package in args.editables {
+                requirements.push(RequirementsSource::from_editable(&package)?);
+            }
+            requirements.extend(
+                args.requirements
+                    .into_iter()
+                    .map(RequirementsSource::from_requirements_file)
+                    .collect::<Result<Vec<_>, _>>()?,
+            );
+            let constraints = args
+                .constraints
+                .into_iter()
+                .map(RequirementsSource::from_constraints_txt)
+                .collect::<Result<Vec<_>, _>>()?;
+            let overrides = args
+                .overrides
+                .into_iter()
+                .map(RequirementsSource::from_overrides_txt)
+                .collect::<Result<Vec<_>, _>>()?;
+            let build_constraints = args
+                .build_constraints
+                .into_iter()
+                .map(RequirementsSource::from_constraints_txt)
+                .collect::<Result<Vec<_>, _>>()?;
+
+            commands::pip_download(
+                &requirements,
+                &constraints,
+                &overrides,
+                &build_constraints,
+                &args.settings.extras,
+                args.settings.resolution,
+                args.settings.prerelease,
+                args.settings.dependency_mode,
+                args.settings.upgrade,
+                args.settings.index_locations,
+                args.settings.index_strategy,
+                args.settings.torch_backend,
+                args.settings.dependency_metadata,
+                args.settings.keyring_provider,
+                &client_builder.subcommand(vec!["pip".to_owned(), "download".to_owned()]),
+                args.settings.hash_checking,
+                &args.settings.config_setting,
+                &args.settings.config_settings_package,
+                args.settings.build_isolation.clone(),
+                &args.settings.extra_build_dependencies,
+                &args.settings.extra_build_variables,
+                args.settings.build_options,
+                args.settings.python_version,
+                args.settings.python_platform,
+                globals.python_downloads,
+                args.settings.install_mirrors,
+                args.settings.exclude_newer,
+                args.settings.sources,
+                args.settings.python,
+                args.settings.system,
+                args.dest,
+                globals.python_preference,
+                globals.concurrency,
+                cache,
+                printer,
+                globals.preview,
+            )
+            .await
+        }
+        Commands::Pip(PipNamespace {
             command: PipCommand::Uninstall(args),
         }) => {
             // Resolve the settings from the command-line arguments and workspace configuration.

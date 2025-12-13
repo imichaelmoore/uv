@@ -972,6 +972,15 @@ pub enum PipCommand {
         after_long_help = ""
     )]
     Install(PipInstallArgs),
+    /// Download packages from an index.
+    ///
+    /// Downloaded packages are saved to the current directory or to the directory specified by
+    /// `--dest`.
+    #[command(
+        after_help = "Use `uv help pip download` for more details.",
+        after_long_help = ""
+    )]
+    Download(PipDownloadArgs),
     /// Uninstall packages from an environment.
     #[command(
         after_help = "Use `uv help pip uninstall` for more details.",
@@ -2323,6 +2332,262 @@ pub struct PipInstallArgs {
     /// print the resulting plan.
     #[arg(long)]
     pub dry_run: bool,
+
+    /// The backend to use when fetching packages in the PyTorch ecosystem (e.g., `cpu`, `cu126`, or `auto`)
+    ///
+    /// When set, uv will ignore the configured index URLs for packages in the PyTorch ecosystem,
+    /// and will instead use the defined backend.
+    ///
+    /// For example, when set to `cpu`, uv will use the CPU-only PyTorch index; when set to `cu126`,
+    /// uv will use the PyTorch index for CUDA 12.6.
+    ///
+    /// The `auto` mode will attempt to detect the appropriate PyTorch index based on the currently
+    /// installed CUDA drivers.
+    ///
+    /// This option is in preview and may change in any future release.
+    #[arg(long, value_enum, env = EnvVars::UV_TORCH_BACKEND)]
+    pub torch_backend: Option<TorchMode>,
+
+    #[command(flatten)]
+    pub compat_args: compat::PipInstallCompatArgs,
+}
+
+#[derive(Args)]
+#[command(group = clap::ArgGroup::new("sources").required(true).multiple(true))]
+pub struct PipDownloadArgs {
+    /// Download all listed packages.
+    ///
+    /// The order of the packages is used to determine priority during resolution.
+    #[arg(group = "sources")]
+    pub package: Vec<String>,
+
+    /// Download the packages listed in the given files.
+    ///
+    /// The following formats are supported: `requirements.txt`, `.py` files with inline metadata,
+    /// `pylock.toml`, `pyproject.toml`, `setup.py`, and `setup.cfg`.
+    ///
+    /// If a `pyproject.toml`, `setup.py`, or `setup.cfg` file is provided, uv will extract the
+    /// requirements for the relevant project.
+    ///
+    /// If `-` is provided, then requirements will be read from stdin.
+    #[arg(long, short, alias = "requirement", group = "sources", value_parser = parse_file_path)]
+    pub requirements: Vec<PathBuf>,
+
+    /// Download the editable package based on the provided local file path.
+    #[arg(long, short, group = "sources")]
+    pub editable: Vec<String>,
+
+    /// Constrain versions using the given requirements files.
+    ///
+    /// Constraints files are `requirements.txt`-like files that only control the _version_ of a
+    /// requirement that's installed. However, including a package in a constraints file will _not_
+    /// trigger the download of that package.
+    ///
+    /// This is equivalent to pip's `--constraint` option.
+    #[arg(long, short, alias = "constraint", env = EnvVars::UV_CONSTRAINT, value_delimiter = ' ', value_parser = parse_maybe_file_path)]
+    pub constraints: Vec<Maybe<PathBuf>>,
+
+    /// Override versions using the given requirements files.
+    ///
+    /// Overrides files are `requirements.txt`-like files that force a specific version of a
+    /// requirement to be downloaded, regardless of the requirements declared by any constituent
+    /// package, and regardless of whether this would be considered an invalid resolution.
+    ///
+    /// While constraints are _additive_, in that they're combined with the requirements of the
+    /// constituent packages, overrides are _absolute_, in that they completely replace the
+    /// requirements of the constituent packages.
+    #[arg(long, alias = "override", env = EnvVars::UV_OVERRIDE, value_delimiter = ' ', value_parser = parse_maybe_file_path)]
+    pub overrides: Vec<Maybe<PathBuf>>,
+
+    /// Constrain build dependencies using the given requirements files when building source
+    /// distributions.
+    ///
+    /// Constraints files are `requirements.txt`-like files that only control the _version_ of a
+    /// requirement that's installed. However, including a package in a constraints file will _not_
+    /// trigger the installation of that package.
+    #[arg(long, short, alias = "build-constraint", env = EnvVars::UV_BUILD_CONSTRAINT, value_delimiter = ' ', value_parser = parse_maybe_file_path)]
+    pub build_constraints: Vec<Maybe<PathBuf>>,
+
+    /// Include optional dependencies from the specified extra name; may be provided more than once.
+    ///
+    /// Only applies to `pyproject.toml`, `setup.py`, and `setup.cfg` sources.
+    #[arg(long, conflicts_with = "all_extras", value_parser = extra_name_with_clap_error)]
+    pub extra: Option<Vec<ExtraName>>,
+
+    /// Include all optional dependencies.
+    ///
+    /// Only applies to `pyproject.toml`, `setup.py`, and `setup.cfg` sources.
+    #[arg(long, conflicts_with = "extra", overrides_with = "no_all_extras")]
+    pub all_extras: bool,
+
+    #[arg(long, overrides_with("all_extras"), hide = true)]
+    pub no_all_extras: bool,
+
+    #[command(flatten)]
+    pub resolver: ResolverArgs,
+
+    #[command(flatten)]
+    pub refresh: RefreshArgs,
+
+    /// Ignore package dependencies, instead only downloading those packages explicitly listed
+    /// on the command line or in the requirements files.
+    #[arg(long, overrides_with("deps"))]
+    pub no_deps: bool,
+
+    #[arg(long, overrides_with("no_deps"), hide = true)]
+    pub deps: bool,
+
+    /// Require a matching hash for each requirement.
+    ///
+    /// By default, uv will verify any available hashes in the requirements file, but will not
+    /// require that all requirements have an associated hash.
+    ///
+    /// When `--require-hashes` is enabled, _all_ requirements must include a hash or set of hashes,
+    /// and _all_ requirements must either be pinned to exact versions (e.g., `==1.0.0`), or be
+    /// specified via direct URL.
+    ///
+    /// Hash-checking mode introduces a number of additional constraints:
+    ///
+    /// - Git dependencies are not supported.
+    /// - Editable installations are not supported.
+    /// - Local dependencies are not supported, unless they point to a specific wheel (`.whl`) or
+    ///   source archive (`.zip`, `.tar.gz`), as opposed to a directory.
+    #[arg(
+        long,
+        env = EnvVars::UV_REQUIRE_HASHES,
+        value_parser = clap::builder::BoolishValueParser::new(),
+        overrides_with("no_require_hashes"),
+    )]
+    pub require_hashes: bool,
+
+    #[arg(long, overrides_with("require_hashes"), hide = true)]
+    pub no_require_hashes: bool,
+
+    #[arg(long, overrides_with("no_verify_hashes"), hide = true)]
+    pub verify_hashes: bool,
+
+    /// Disable validation of hashes in the requirements file.
+    ///
+    /// By default, uv will verify any available hashes in the requirements file, but will not
+    /// require that all requirements have an associated hash. To enforce hash validation, use
+    /// `--require-hashes`.
+    #[arg(
+        long,
+        env = EnvVars::UV_NO_VERIFY_HASHES,
+        value_parser = clap::builder::BoolishValueParser::new(),
+        overrides_with("verify_hashes"),
+    )]
+    pub no_verify_hashes: bool,
+
+    /// The Python interpreter to use for resolving dependencies.
+    ///
+    /// See `uv help python` for details on Python discovery and supported request formats.
+    #[arg(
+        long,
+        short,
+        env = EnvVars::UV_PYTHON,
+        verbatim_doc_comment,
+        help_heading = "Python options",
+        value_parser = parse_maybe_string,
+    )]
+    pub python: Option<Maybe<String>>,
+
+    /// Resolve using the system Python environment.
+    ///
+    /// By default, uv looks for a Python in a virtual environment or uses one found in the
+    /// system `PATH`.
+    #[arg(
+        long,
+        env = EnvVars::UV_SYSTEM_PYTHON,
+        value_parser = clap::builder::BoolishValueParser::new(),
+        overrides_with("no_system")
+    )]
+    pub system: bool,
+
+    #[arg(long, overrides_with("system"), hide = true)]
+    pub no_system: bool,
+
+    /// Don't build source distributions.
+    ///
+    /// When enabled, resolving will not run arbitrary Python code. The cached wheels of
+    /// already-built source distributions will be reused, but operations that require building
+    /// distributions will exit with an error.
+    ///
+    /// Alias for `--only-binary :all:`.
+    #[arg(
+        long,
+        conflicts_with = "no_binary",
+        conflicts_with = "only_binary",
+        overrides_with("build")
+    )]
+    pub no_build: bool,
+
+    #[arg(
+        long,
+        conflicts_with = "no_binary",
+        conflicts_with = "only_binary",
+        overrides_with("no_build"),
+        hide = true
+    )]
+    pub build: bool,
+
+    /// Don't install pre-built wheels.
+    ///
+    /// The given packages will be built and downloaded from source. The resolver will still use
+    /// pre-built wheels to extract package metadata, if available.
+    ///
+    /// Multiple packages may be provided. Disable binaries for all packages with `:all:`. Clear
+    /// previously specified packages with `:none:`.
+    #[arg(long, conflicts_with = "no_build")]
+    pub no_binary: Option<Vec<PackageNameSpecifier>>,
+
+    /// Only use pre-built wheels; don't build source distributions.
+    ///
+    /// When enabled, resolving will not run code from the given packages. The cached wheels of
+    /// already-built source distributions will be reused, but operations that require building
+    /// distributions will exit with an error.
+    ///
+    /// Multiple packages may be provided. Disable binaries for all packages with `:all:`. Clear
+    /// previously specified packages with `:none:`.
+    #[arg(long, conflicts_with = "no_build")]
+    pub only_binary: Option<Vec<PackageNameSpecifier>>,
+
+    /// The minimum Python version that should be supported by the requirements (e.g., `3.7` or
+    /// `3.7.9`).
+    ///
+    /// If a patch version is omitted, the minimum patch version is assumed. For example, `3.7` is
+    /// mapped to `3.7.0`.
+    #[arg(long)]
+    pub python_version: Option<PythonVersion>,
+
+    /// The platform for which requirements should be downloaded.
+    ///
+    /// Represented as a "target triple", a string that describes the target platform in terms of
+    /// its CPU, vendor, and operating system name, like `x86_64-unknown-linux-gnu` or
+    /// `aarch64-apple-darwin`.
+    ///
+    /// When targeting macOS (Darwin), the default minimum version is `13.0`. Use
+    /// `MACOSX_DEPLOYMENT_TARGET` to specify a different minimum version, e.g., `14.0`.
+    ///
+    /// When targeting iOS, the default minimum version is `13.0`. Use
+    /// `IPHONEOS_DEPLOYMENT_TARGET` to specify a different minimum version, e.g., `14.0`.
+    ///
+    /// When targeting Android, the default minimum Android API level is `24`. Use
+    /// `ANDROID_API_LEVEL` to specify a different minimum version, e.g., `26`.
+    ///
+    /// WARNING: When specified, uv will select wheels that are compatible with the _target_
+    /// platform; as a result, the downloaded distributions may not be compatible with the _current_
+    /// platform. Conversely, any distributions that are built from source may be incompatible with
+    /// the _target_ platform, as they will be built for the _current_ platform. The
+    /// `--python-platform` option is intended for advanced use cases.
+    #[arg(long)]
+    pub python_platform: Option<TargetTriple>,
+
+    /// Directory to download packages into.
+    ///
+    /// By default, packages are downloaded to the current directory.
+    #[arg(long, short = 'd')]
+    pub dest: Option<PathBuf>,
 
     /// The backend to use when fetching packages in the PyTorch ecosystem (e.g., `cpu`, `cu126`, or `auto`)
     ///

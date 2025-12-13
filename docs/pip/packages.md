@@ -145,3 +145,56 @@ To uninstall multiple packages, e.g., Flask and Ruff:
 ```console
 $ uv pip uninstall flask ruff
 ```
+
+## Downloading packages
+
+The `uv pip download` command downloads packages and their dependencies to a specified directory
+without installing them. This is useful for creating offline package repositories or for
+pre-downloading packages.
+
+To download a package, e.g., Flask:
+
+```console
+$ uv pip download flask
+```
+
+By default, packages are downloaded to the current directory. To specify a destination directory:
+
+```console
+$ uv pip download flask -d ./packages
+```
+
+To download packages from a requirements file:
+
+```console
+$ uv pip download -r requirements.txt -d ./packages
+```
+
+To download only the specified packages without their dependencies:
+
+```console
+$ uv pip download flask --no-deps -d ./packages
+```
+
+To download packages with a constraint:
+
+```console
+$ uv pip download flask -c constraints.txt -d ./packages
+```
+
+To download only pre-built wheels (no source distributions):
+
+```console
+$ uv pip download flask --only-binary :all: -d ./packages
+```
+
+To download packages for a specific platform (e.g., for cross-platform packaging):
+
+```console
+$ uv pip download flask --python-platform manylinux_2_17_x86_64 -d ./packages
+```
+
+!!! note
+
+    When using `--python-platform`, the downloaded wheels may not be compatible with the current
+    platform, as they are selected for the target platform.
