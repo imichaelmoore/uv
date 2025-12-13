@@ -132,6 +132,32 @@ $ uv pip install --group some/path/pyproject.toml:foo --group other/pyproject.to
     For instance, `uv pip install -r some/path/pyproject.toml --group foo` sources `foo`
     from `./pyproject.toml` and **not** `some/path/pyproject.toml`.
 
+## Building wheels
+
+To build wheels from requirements without installing them:
+
+```console
+$ uv pip wheel flask
+```
+
+By default, wheels are placed in a `wheelhouse` directory. To specify a different output directory:
+
+```console
+$ uv pip wheel flask -w dist
+```
+
+To build wheels from a `requirements.txt` file:
+
+```console
+$ uv pip wheel -r requirements.txt
+```
+
+To build wheels without including dependencies:
+
+```console
+$ uv pip wheel flask --no-deps
+```
+
 ## Uninstalling a package
 
 To uninstall a package, e.g., Flask:
