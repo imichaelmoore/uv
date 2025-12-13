@@ -48,10 +48,22 @@ fn test_notification_management() {
     state.add_notification(Notification::error("Error message"));
 
     assert_eq!(state.notifications().len(), 4);
-    assert_eq!(state.notifications()[0].notification_type, NotificationType::Info);
-    assert_eq!(state.notifications()[1].notification_type, NotificationType::Success);
-    assert_eq!(state.notifications()[2].notification_type, NotificationType::Warning);
-    assert_eq!(state.notifications()[3].notification_type, NotificationType::Error);
+    assert_eq!(
+        state.notifications()[0].notification_type,
+        NotificationType::Info
+    );
+    assert_eq!(
+        state.notifications()[1].notification_type,
+        NotificationType::Success
+    );
+    assert_eq!(
+        state.notifications()[2].notification_type,
+        NotificationType::Warning
+    );
+    assert_eq!(
+        state.notifications()[3].notification_type,
+        NotificationType::Error
+    );
 
     // Remove notification
     state.remove_notification(1);
@@ -101,13 +113,8 @@ fn test_project_state() {
     assert!(project.is_valid());
 
     // Test dependencies
-    project.dependencies = vec![
-        Package::new("requests"),
-        Package::new("numpy"),
-    ];
-    project.dev_dependencies = vec![
-        Package::new("pytest"),
-    ];
+    project.dependencies = vec![Package::new("requests"), Package::new("numpy")];
+    project.dev_dependencies = vec![Package::new("pytest")];
 
     assert_eq!(project.dependency_count(), 3);
     assert_eq!(project.all_dependencies().len(), 3);
@@ -122,7 +129,10 @@ fn test_package_creation() {
 
     let pkg_with_version = Package::with_version("numpy", "1.26.0");
     assert_eq!(pkg_with_version.name, "numpy");
-    assert_eq!(pkg_with_version.installed_version, Some("1.26.0".to_string()));
+    assert_eq!(
+        pkg_with_version.installed_version,
+        Some("1.26.0".to_string())
+    );
     assert!(pkg_with_version.is_installed());
 }
 

@@ -1,8 +1,8 @@
 //! Python version management view.
 
 use gpui::{
-    div, prelude::*, px, rgb, Context, FocusHandle, InteractiveElement, IntoElement, ParentElement,
-    Render, SharedString, StatefulInteractiveElement, Styled, Window,
+    Context, FocusHandle, InteractiveElement, IntoElement, ParentElement, Render, SharedString,
+    StatefulInteractiveElement, Styled, Window, div, prelude::*, px, rgb,
 };
 
 use crate::state::PythonInstallation;
@@ -74,15 +74,11 @@ impl PythonView {
                     .gap(px(8.0))
                     .child(self.render_no_installed())
             } else {
-                div()
-                    .flex()
-                    .flex_col()
-                    .gap(px(8.0))
-                    .children(
-                        self.installed_versions
-                            .iter()
-                            .map(|py| self.render_installed_card(py)),
-                    )
+                div().flex().flex_col().gap(px(8.0)).children(
+                    self.installed_versions
+                        .iter()
+                        .map(|py| self.render_installed_card(py)),
+                )
             })
     }
 
@@ -217,12 +213,7 @@ impl PythonView {
             .flex_col()
             .items_center()
             .gap(px(12.0))
-            .child(
-                div()
-                    .text_2xl()
-                    .text_color(rgb(0x45475a))
-                    .child("🐍"),
-            )
+            .child(div().text_2xl().text_color(rgb(0x45475a)).child("🐍"))
             .child(
                 div()
                     .text_base()
@@ -257,20 +248,12 @@ impl PythonView {
                     .text_color(rgb(0xcdd6f4))
                     .child("Available Python Versions"),
             )
-            .child(
-                div()
-                    .flex()
-                    .flex_wrap()
-                    .gap(px(12.0))
-                    .children(
-                        self.available_versions
-                            .iter()
-                            .map(|version| {
-                                let is_installed = installed_versions.contains(version);
-                                self.render_version_chip(version, is_installed)
-                            }),
-                    ),
-            )
+            .child(div().flex().flex_wrap().gap(px(12.0)).children(
+                self.available_versions.iter().map(|version| {
+                    let is_installed = installed_versions.contains(version);
+                    self.render_version_chip(version, is_installed)
+                }),
+            ))
     }
 
     fn render_version_chip(&self, version: &str, is_installed: bool) -> impl IntoElement {
@@ -309,20 +292,10 @@ impl PythonView {
                     .child(format!("Python {version}")),
             )
             .when(is_installed, |el| {
-                el.child(
-                    div()
-                        .text_xs()
-                        .text_color(rgb(0xa6e3a1))
-                        .child("✓"),
-                )
+                el.child(div().text_xs().text_color(rgb(0xa6e3a1)).child("✓"))
             })
             .when(!is_installed, |el| {
-                el.child(
-                    div()
-                        .text_xs()
-                        .text_color(rgb(0x89b4fa))
-                        .child("Install"),
-                )
+                el.child(div().text_xs().text_color(rgb(0x89b4fa)).child("Install"))
             })
     }
 }

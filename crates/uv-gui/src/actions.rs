@@ -3,6 +3,9 @@
 //! This module defines all the actions that can be triggered in the GUI,
 //! such as adding packages, switching tabs, and refreshing data.
 
+// These action types are defined for future use with GPUI's action system.
+#![allow(dead_code, unreachable_pub)]
+
 use serde::{Deserialize, Serialize};
 
 use crate::state::Tab;

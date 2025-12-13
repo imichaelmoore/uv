@@ -1,6 +1,8 @@
 //! Main window view container.
 
-use gpui::{div, rgb, Context, FocusHandle, InteractiveElement, IntoElement, Render, Styled, Window};
+use gpui::{
+    Context, FocusHandle, InteractiveElement, IntoElement, Render, Styled, Window, div, rgb,
+};
 
 /// The main window container that manages the overall layout.
 pub struct MainWindow {

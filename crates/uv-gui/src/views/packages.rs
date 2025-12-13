@@ -1,8 +1,8 @@
 //! Package browser view.
 
 use gpui::{
-    div, prelude::*, px, rgb, Context, FocusHandle, InteractiveElement, IntoElement, ParentElement,
-    Render, SharedString, StatefulInteractiveElement, Styled, Window,
+    Context, FocusHandle, InteractiveElement, IntoElement, ParentElement, Render, SharedString,
+    StatefulInteractiveElement, Styled, Window, div, prelude::*, px, rgb,
 };
 
 use crate::state::Package;
@@ -137,35 +137,29 @@ impl PackagesView {
                             .child(format!("{} packages", self.search_results.len())),
                     ),
             )
-            .child(if self.search_results.is_empty() && self.search_query.is_empty() {
-                // Show popular packages placeholder
-                let popular_packages = self.get_popular_packages();
-                div()
-                    .flex()
-                    .flex_col()
-                    .gap(px(8.0))
-                    .children(
+            .child(
+                if self.search_results.is_empty() && self.search_query.is_empty() {
+                    // Show popular packages placeholder
+                    let popular_packages = self.get_popular_packages();
+                    div().flex().flex_col().gap(px(8.0)).children(
                         popular_packages
                             .iter()
                             .map(|pkg| self.render_package_card(pkg)),
                     )
-            } else if self.search_results.is_empty() {
-                div()
-                    .flex()
-                    .flex_col()
-                    .gap(px(8.0))
-                    .child(self.render_no_results())
-            } else {
-                div()
-                    .flex()
-                    .flex_col()
-                    .gap(px(8.0))
-                    .children(
+                } else if self.search_results.is_empty() {
+                    div()
+                        .flex()
+                        .flex_col()
+                        .gap(px(8.0))
+                        .child(self.render_no_results())
+                } else {
+                    div().flex().flex_col().gap(px(8.0)).children(
                         self.search_results
                             .iter()
                             .map(|pkg| self.render_package_card(pkg)),
                     )
-            })
+                },
+            )
     }
 
     fn render_package_card(&self, package: &Package) -> impl IntoElement {
@@ -201,16 +195,13 @@ impl PackagesView {
                                     .child(package.name.clone()),
                             )
                             .child(
-                                div()
-                                    .text_xs()
-                                    .text_color(rgb(0x6c7086))
-                                    .child(
-                                        package
-                                            .latest_version
-                                            .clone()
-                                            .or(package.installed_version.clone())
-                                            .unwrap_or_else(|| "unknown".to_string()),
-                                    ),
+                                div().text_xs().text_color(rgb(0x6c7086)).child(
+                                    package
+                                        .latest_version
+                                        .clone()
+                                        .or(package.installed_version.clone())
+                                        .unwrap_or_else(|| "unknown".to_string()),
+                                ),
                             )
                             .when(is_installed, |el| {
                                 el.child(
@@ -274,12 +265,7 @@ impl PackagesView {
             .flex_col()
             .items_center()
             .gap(px(12.0))
-            .child(
-                div()
-                    .text_2xl()
-                    .text_color(rgb(0x45475a))
-                    .child("🔍"),
-            )
+            .child(div().text_2xl().text_color(rgb(0x45475a)).child("🔍"))
             .child(
                 div()
                     .text_base()
@@ -305,17 +291,13 @@ impl PackagesView {
             Package {
                 name: "numpy".to_string(),
                 latest_version: Some("1.26.2".to_string()),
-                description: Some(
-                    "Fundamental package for array computing in Python".to_string(),
-                ),
+                description: Some("Fundamental package for array computing in Python".to_string()),
                 ..Default::default()
             },
             Package {
                 name: "pandas".to_string(),
                 latest_version: Some("2.1.3".to_string()),
-                description: Some(
-                    "Powerful data structures for data analysis".to_string(),
-                ),
+                description: Some("Powerful data structures for data analysis".to_string()),
                 ..Default::default()
             },
             Package {
@@ -329,17 +311,13 @@ impl PackagesView {
             Package {
                 name: "django".to_string(),
                 latest_version: Some("4.2.7".to_string()),
-                description: Some(
-                    "A high-level Python web framework".to_string(),
-                ),
+                description: Some("A high-level Python web framework".to_string()),
                 ..Default::default()
             },
             Package {
                 name: "pytest".to_string(),
                 latest_version: Some("7.4.3".to_string()),
-                description: Some(
-                    "Simple powerful testing with Python".to_string(),
-                ),
+                description: Some("Simple powerful testing with Python".to_string()),
                 ..Default::default()
             },
         ]

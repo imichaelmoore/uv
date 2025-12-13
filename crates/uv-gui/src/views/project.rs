@@ -1,8 +1,8 @@
 //! Project overview view.
 
 use gpui::{
-    div, prelude::*, px, rgb, Context, FocusHandle, InteractiveElement, IntoElement, ParentElement,
-    Render, SharedString, StatefulInteractiveElement, Styled, Window,
+    Context, FocusHandle, InteractiveElement, IntoElement, ParentElement, Render, SharedString,
+    StatefulInteractiveElement, Styled, Window, div, prelude::*, px, rgb,
 };
 
 use crate::state::{Package, ProjectState};
@@ -33,12 +33,7 @@ impl ProjectView {
             .items_center()
             .justify_center()
             .gap(px(16.0))
-            .child(
-                div()
-                    .text_2xl()
-                    .text_color(rgb(0x45475a))
-                    .child("📦"),
-            )
+            .child(div().text_2xl().text_color(rgb(0x45475a)).child("📦"))
             .child(
                 div()
                     .text_xl()
@@ -134,10 +129,12 @@ impl ProjectView {
             )
             // Dependencies section
             .child(self.render_dependencies_section("Dependencies", &project.dependencies))
-            .child(self.render_dependencies_section(
-                "Development Dependencies",
-                &project.dev_dependencies,
-            ))
+            .child(
+                self.render_dependencies_section(
+                    "Development Dependencies",
+                    &project.dev_dependencies,
+                ),
+            )
     }
 
     fn render_action_button(&self, label: &str, _icon: &str) -> impl IntoElement {
@@ -181,11 +178,7 @@ impl ProjectView {
             )
     }
 
-    fn render_dependencies_section(
-        &self,
-        title: &str,
-        packages: &[Package],
-    ) -> impl IntoElement {
+    fn render_dependencies_section(&self, title: &str, packages: &[Package]) -> impl IntoElement {
         div()
             .flex()
             .flex_col()
@@ -257,15 +250,12 @@ impl ProjectView {
                             .child(package.name.clone()),
                     )
                     .child(
-                        div()
-                            .text_xs()
-                            .text_color(rgb(0x6c7086))
-                            .child(
-                                package
-                                    .installed_version
-                                    .clone()
-                                    .unwrap_or_else(|| "not installed".to_string()),
-                            ),
+                        div().text_xs().text_color(rgb(0x6c7086)).child(
+                            package
+                                .installed_version
+                                .clone()
+                                .unwrap_or_else(|| "not installed".to_string()),
+                        ),
                     ),
             )
             .child(

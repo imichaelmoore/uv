@@ -1,8 +1,8 @@
 //! Search bar component.
 
 use gpui::{
-    div, prelude::*, px, rgb, InteractiveElement, IntoElement, ParentElement, RenderOnce,
-    SharedString, Styled,
+    InteractiveElement, IntoElement, ParentElement, RenderOnce, SharedString, Styled, div,
+    prelude::*, px, rgb,
 };
 
 /// A search input component.
@@ -78,10 +78,7 @@ impl RenderOnce for SearchBar {
             .gap(px(8.0))
             .child(
                 // Search icon
-                div()
-                    .text_sm()
-                    .text_color(rgb(0x6c7086))
-                    .child("🔍"),
+                div().text_sm().text_color(rgb(0x6c7086)).child("🔍"),
             )
             .child(
                 div()

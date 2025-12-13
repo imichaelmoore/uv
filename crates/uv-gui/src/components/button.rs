@@ -1,8 +1,7 @@
 //! Button component.
 
 use gpui::{
-    div, px, rgb, InteractiveElement, IntoElement, ParentElement, RenderOnce, SharedString,
-    StatefulInteractiveElement, Styled,
+    InteractiveElement, IntoElement, ParentElement, RenderOnce, SharedString, Styled, div, px, rgb,
 };
 
 /// Button visual style variants.

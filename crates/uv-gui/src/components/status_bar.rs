@@ -1,7 +1,7 @@
 //! Status bar component.
 
 use gpui::{
-    div, prelude::*, px, rgb, IntoElement, ParentElement, RenderOnce, SharedString, Styled,
+    IntoElement, ParentElement, RenderOnce, SharedString, Styled, div, prelude::*, px, rgb,
 };
 
 /// Status bar position.

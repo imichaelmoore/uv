@@ -1,8 +1,8 @@
 //! Package card component.
 
 use gpui::{
-    div, prelude::*, px, rgb, InteractiveElement, IntoElement, ParentElement, RenderOnce,
-    SharedString, Styled,
+    InteractiveElement, IntoElement, ParentElement, RenderOnce, SharedString, Styled, div,
+    prelude::*, px, rgb,
 };
 
 use crate::state::Package;
@@ -99,16 +99,13 @@ impl RenderOnce for PackageCard {
                                     .child(self.package.name.clone()),
                             )
                             .child(
-                                div()
-                                    .text_xs()
-                                    .text_color(rgb(0x6c7086))
-                                    .child(
-                                        self.package
-                                            .installed_version
-                                            .clone()
-                                            .or(self.package.latest_version.clone())
-                                            .unwrap_or_else(|| "unknown".to_string()),
-                                    ),
+                                div().text_xs().text_color(rgb(0x6c7086)).child(
+                                    self.package
+                                        .installed_version
+                                        .clone()
+                                        .or(self.package.latest_version.clone())
+                                        .unwrap_or_else(|| "unknown".to_string()),
+                                ),
                             )
                             .when(is_installed, |el| {
                                 el.child(
@@ -159,10 +156,7 @@ impl RenderOnce for PackageCard {
                         .when(has_update, |el| {
                             el.child(
                                 div()
-                                    .id(SharedString::from(format!(
-                                        "update-{}",
-                                        self.package.name
-                                    )))
+                                    .id(SharedString::from(format!("update-{}", self.package.name)))
                                     .px(px(12.0))
                                     .py(px(6.0))
                                     .bg(rgb(0xf9e2af))
@@ -176,10 +170,7 @@ impl RenderOnce for PackageCard {
                         })
                         .child(
                             div()
-                                .id(SharedString::from(format!(
-                                    "action-{}",
-                                    self.package.name
-                                )))
+                                .id(SharedString::from(format!("action-{}", self.package.name)))
                                 .px(px(12.0))
                                 .py(px(6.0))
                                 .bg(if is_installed {

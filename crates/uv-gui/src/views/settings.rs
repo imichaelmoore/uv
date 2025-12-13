@@ -1,8 +1,8 @@
 //! Settings view.
 
 use gpui::{
-    div, px, rgb, Context, FocusHandle, InteractiveElement, IntoElement, ParentElement, Render,
-    SharedString, StatefulInteractiveElement, Styled, Window,
+    Context, FocusHandle, InteractiveElement, IntoElement, ParentElement, Render, SharedString,
+    StatefulInteractiveElement, Styled, Window, div, px, rgb,
 };
 
 /// View for application settings.
@@ -170,12 +170,7 @@ impl SettingsView {
                             .text_color(rgb(0xcdd6f4))
                             .child(value.to_string()),
                     )
-                    .child(
-                        div()
-                            .text_xs()
-                            .text_color(rgb(0x6c7086))
-                            .child("▼"),
-                    ),
+                    .child(div().text_xs().text_color(rgb(0x6c7086)).child("▼")),
             )
     }
 
@@ -324,11 +319,7 @@ impl SettingsView {
                             .flex()
                             .items_center()
                             .gap(px(12.0))
-                            .child(
-                                div()
-                                    .text_2xl()
-                                    .child("📦"),
-                            )
+                            .child(div().text_2xl().child("📦"))
                             .child(
                                 div()
                                     .flex()
@@ -341,19 +332,16 @@ impl SettingsView {
                                             .child("uv"),
                                     )
                                     .child(
-                                        div()
-                                            .text_sm()
-                                            .text_color(rgb(0x6c7086))
-                                            .child(format!("Version {}", env!("CARGO_PKG_VERSION"))),
+                                        div().text_sm().text_color(rgb(0x6c7086)).child(format!(
+                                            "Version {}",
+                                            env!("CARGO_PKG_VERSION")
+                                        )),
                                     ),
                             ),
                     )
-                    .child(
-                        div()
-                            .text_sm()
-                            .text_color(rgb(0xa6adc8))
-                            .child("An extremely fast Python package and project manager, written in Rust."),
-                    )
+                    .child(div().text_sm().text_color(rgb(0xa6adc8)).child(
+                        "An extremely fast Python package and project manager, written in Rust.",
+                    ))
                     .child(
                         div()
                             .flex()

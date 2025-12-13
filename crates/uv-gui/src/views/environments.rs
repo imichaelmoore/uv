@@ -1,8 +1,8 @@
 //! Virtual environment management view.
 
 use gpui::{
-    div, prelude::*, px, rgb, Context, FocusHandle, InteractiveElement, IntoElement, ParentElement,
-    Render, SharedString, StatefulInteractiveElement, Styled, Window,
+    Context, FocusHandle, InteractiveElement, IntoElement, ParentElement, Render, SharedString,
+    StatefulInteractiveElement, Styled, Window, div, prelude::*, px, rgb,
 };
 
 use crate::state::Environment;
@@ -164,10 +164,7 @@ impl EnvironmentsView {
                                     .items_center()
                                     .gap(px(4.0))
                                     .child(
-                                        div()
-                                            .text_sm()
-                                            .text_color(rgb(0x6c7086))
-                                            .child("Python:"),
+                                        div().text_sm().text_color(rgb(0x6c7086)).child("Python:"),
                                     )
                                     .child(
                                         div()
@@ -199,12 +196,7 @@ impl EnvironmentsView {
                                     .flex()
                                     .items_center()
                                     .gap(px(4.0))
-                                    .child(
-                                        div()
-                                            .text_sm()
-                                            .text_color(rgb(0x6c7086))
-                                            .child("Size:"),
-                                    )
+                                    .child(div().text_sm().text_color(rgb(0x6c7086)).child("Size:"))
                                     .child(
                                         div()
                                             .text_sm()
@@ -249,11 +241,7 @@ impl EnvironmentsView {
                             .when(!env.is_active, |el| {
                                 el.hover(|style| style.bg(rgb(0xb4befe)))
                             })
-                            .child(if env.is_active {
-                                "Active"
-                            } else {
-                                "Activate"
-                            }),
+                            .child(if env.is_active { "Active" } else { "Activate" }),
                     )
                     .child(
                         div()
@@ -278,12 +266,7 @@ impl EnvironmentsView {
             .flex_col()
             .items_center()
             .gap(px(12.0))
-            .child(
-                div()
-                    .text_2xl()
-                    .text_color(rgb(0x45475a))
-                    .child("📦"),
-            )
+            .child(div().text_2xl().text_color(rgb(0x45475a)).child("📦"))
             .child(
                 div()
                     .text_xl()
