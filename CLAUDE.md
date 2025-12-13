@@ -285,3 +285,4 @@ From STYLE.md:
 - Look for `good first issue` and `help wanted` labels
 - Don't work on unlabeled issues without checking first
 - New feature PRs without prior discussion will be closed
+- Always make sure the PR description is up to date if working on a PR.  Ensure it reflects the current state of the PR, do not use phrases like "Recent Changes" or such based on specific commits in the PR.  Also make sure you don't reference screenshots or something in the description.

@@ -9214,6 +9214,7 @@ dependencies = [
  "futures",
  "gpui",
  "insta",
+ "reqwest",
  "serde",
  "serde_json",
  "tempfile",
