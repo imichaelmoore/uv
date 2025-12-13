@@ -9,6 +9,15 @@ authors.workspace = true
 license.workspace = true
 description = "A graphical user interface for uv, the Python package manager"
 
+[[bin]]
+name = "uv-gui"
+path = "src/main.rs"
+
+[lib]
+name = "uv_gui"
+path = "src/lib.rs"
+doctest = false
+
 [lints]
 workspace = true
 
@@ -38,6 +47,7 @@ futures = { workspace = true }
 # Serialization
 serde = { workspace = true }
 serde_json = { workspace = true }
+toml = { workspace = true }
 
 # Error handling
 anyhow = { workspace = true }

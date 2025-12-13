@@ -9219,6 +9219,7 @@ dependencies = [
  "tempfile",
  "thiserror 2.0.17",
  "tokio",
+ "toml 0.9.8",
  "tracing",
  "url",
  "uv-cache",

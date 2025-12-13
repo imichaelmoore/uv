@@ -1,0 +1,68 @@
+UV-GUI Feature Development TODO
+================================
+
+IMPLEMENTED
+-----------
+[x] Sidebar navigation with working tabs
+[x] Cmd+Q quit
+[x] Python version detection via `uv python list`
+[x] Python installation (synchronous)
+[x] Environment detection (.venv)
+[x] Create Environment via `uv venv` (synchronous)
+[x] Project detection (name, version from pyproject.toml)
+[x] Settings toggles (Color Output, Preview Features)
+[x] Refresh button
+
+TO DEVELOP (Ordered by Priority)
+--------------------------------
+
+1. Show Installed Dependencies (High Value, Foundation)
+   Display the dependencies/dev_dependencies from pyproject.toml in the Project tab.
+   Currently the tab shows a count but not the actual list.
+   This unlocks remove/update functionality.
+
+2. Parse Dependencies from pyproject.toml (Foundation)
+   Currently extract_project_name() and extract_project_version() are very basic.
+   Need proper TOML parsing to extract project.dependencies and project.optional-dependencies.
+
+3. Remove Package (`uv remove <package>`)
+   Allow removing packages from the project via the UI with a delete button on each dependency.
+
+4. Add Package (`uv add <package>`)
+   Add packages via a simple input field in the Packages tab.
+   Could start with just package name input.
+
+5. Package Search (PyPI Search)
+   Search PyPI for packages to add.
+   The SearchPackages action and search_bar.rs component already exist.
+
+6. Sync Project (`uv sync`)
+   Add a "Sync" button to the Project tab to sync dependencies with the lockfile.
+
+7. Lock Project (`uv lock`)
+   Add a "Lock" button to regenerate the lockfile.
+
+8. Delete Environment
+   Add a delete button on environment cards to remove virtual environments.
+
+9. Uninstall Python
+   Add an uninstall button for managed Python versions.
+
+10. Notifications System
+    The Notification type exists in state - wire it up to show success/error feedback for operations.
+
+11. Async Operations
+    Convert install_python() and create_environment() to async to prevent UI freezing.
+    Both have TODO comments in the code.
+
+12. Open Project (File Picker)
+    Allow opening a different project directory via a file picker dialog.
+
+13. Persist Settings
+    Save/load settings to a config file so they persist across sessions.
+
+14. Update Package (Single Package)
+    Update a specific package to latest version.
+
+15. Update All Packages
+    Batch update all packages with available updates.

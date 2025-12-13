@@ -70,14 +70,16 @@ impl ProjectState {
 pub struct Package {
     /// The package name.
     pub name: String,
-    /// The installed version, if installed.
+    /// The installed version, if installed (from lockfile).
     pub installed_version: Option<String>,
-    /// The required version specifier.
+    /// The required version specifier (from pyproject.toml).
     pub required_version: Option<String>,
     /// The latest available version.
     pub latest_version: Option<String>,
     /// Whether this is a development dependency.
     pub is_dev: bool,
+    /// Human-readable label for the source location.
+    pub source_label: Option<String>,
     /// Whether an update is available.
     pub update_available: bool,
     /// The package description.

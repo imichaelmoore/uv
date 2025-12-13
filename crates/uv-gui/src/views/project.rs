@@ -128,13 +128,12 @@ impl ProjectView {
                     )),
             )
             // Dependencies section
-            .child(self.render_dependencies_section("Dependencies", &project.dependencies))
-            .child(
-                self.render_dependencies_section(
-                    "Development Dependencies",
-                    &project.dev_dependencies,
-                ),
-            )
+            .child(self.render_dependencies_section("Dependencies", &project.dependencies, false))
+            .child(self.render_dependencies_section(
+                "Development Dependencies",
+                &project.dev_dependencies,
+                true, // Show source badges for dev deps
+            ))
     }
 
     fn render_action_button(&self, label: &str, _icon: &str) -> impl IntoElement {
@@ -178,7 +177,12 @@ impl ProjectView {
             )
     }
 
-    fn render_dependencies_section(&self, title: &str, packages: &[Package]) -> impl IntoElement {
+    fn render_dependencies_section(
+        &self,
+        title: &str,
+        packages: &[Package],
+        show_source: bool,
+    ) -> impl IntoElement {
         div()
             .flex()
             .flex_col()
@@ -215,17 +219,26 @@ impl ProjectView {
                         packages
                             .iter()
                             .enumerate()
-                            .map(|(i, pkg)| self.render_package_row(pkg, i)),
+                            .map(|(i, pkg)| self.render_package_row(pkg, i, show_source)),
                     )
             })
     }
 
-    fn render_package_row(&self, package: &Package, index: usize) -> impl IntoElement {
+    fn render_package_row(
+        &self,
+        package: &Package,
+        index: usize,
+        show_source: bool,
+    ) -> impl IntoElement {
         let bg_color = if index % 2 == 0 {
             rgb(0x1e1e2e)
         } else {
             rgb(0x181825)
         };
+
+        // Extract version specifier from requirement string
+        let required_version = Self::format_required_version(package);
+        let installed_version = Self::format_installed_version(package);
 
         div()
             .id(SharedString::from(format!("pkg-{}", package.name)))
@@ -242,40 +255,100 @@ impl ProjectView {
                     .flex()
                     .items_center()
                     .gap(px(12.0))
+                    // Package name
                     .child(
                         div()
                             .text_sm()
                             .font_weight(gpui::FontWeight::MEDIUM)
                             .text_color(rgb(0xcdd6f4))
+                            .min_w(px(120.0))
                             .child(package.name.clone()),
                     )
+                    // Required version specifier
                     .child(
-                        div().text_xs().text_color(rgb(0x6c7086)).child(
-                            package
-                                .installed_version
-                                .clone()
-                                .unwrap_or_else(|| "not installed".to_string()),
-                        ),
-                    ),
+                        div()
+                            .text_xs()
+                            .text_color(rgb(0x6c7086))
+                            .min_w(px(80.0))
+                            .child(required_version),
+                    )
+                    // Source badge for dev deps
+                    .when(show_source && package.is_dev, |el| {
+                        if let Some(source_label) = &package.source_label {
+                            el.child(
+                                div()
+                                    .text_xs()
+                                    .px(px(6.0))
+                                    .py(px(2.0))
+                                    .bg(rgb(0x45475a))
+                                    .text_color(rgb(0xcdd6f4))
+                                    .rounded(px(4.0))
+                                    .child(source_label.clone()),
+                            )
+                        } else {
+                            el
+                        }
+                    }),
             )
             .child(
                 div()
                     .flex()
                     .items_center()
                     .gap(px(8.0))
+                    // Installed version from lockfile
+                    .child(
+                        div()
+                            .text_xs()
+                            .text_color(rgb(0xa6adc8))
+                            .child(installed_version),
+                    )
+                    // Update available badge
                     .when(package.update_available, |el| {
                         el.child(
                             div()
                                 .text_xs()
-                                .px(px(8.0))
+                                .px(px(6.0))
                                 .py(px(2.0))
                                 .bg(rgb(0xa6e3a1))
                                 .text_color(rgb(0x1e1e2e))
                                 .rounded(px(4.0))
-                                .child("Update available"),
+                                .child("Update"),
                         )
                     }),
             )
+    }
+
+    /// Extract version specifier from the requirement string.
+    fn format_required_version(package: &Package) -> String {
+        package
+            .required_version
+            .as_ref()
+            .map(|v| {
+                // Extract just the version specifier part (after package name)
+                let name_len = package.name.len();
+                if v.len() > name_len {
+                    let rest = &v[name_len..];
+                    // Clean up common patterns (extras, whitespace)
+                    rest.trim_start_matches(|c: char| c.is_whitespace() || c == '[')
+                        .split(']')
+                        .last()
+                        .unwrap_or(rest)
+                        .trim()
+                        .to_string()
+                } else {
+                    "*".to_string()
+                }
+            })
+            .unwrap_or_else(|| "*".to_string())
+    }
+
+    /// Format installed version for display.
+    fn format_installed_version(package: &Package) -> String {
+        package
+            .installed_version
+            .as_ref()
+            .map(|v| format!("v{v}"))
+            .unwrap_or_else(|| "not locked".to_string())
     }
 }
 

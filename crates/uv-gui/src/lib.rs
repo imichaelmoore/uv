@@ -27,6 +27,7 @@
 mod actions;
 mod app;
 pub mod components;
+pub mod loaders;
 pub mod state;
 pub mod views;
 

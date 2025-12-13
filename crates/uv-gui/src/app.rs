@@ -9,6 +9,7 @@ use gpui::{
     WindowOptions, actions, div, prelude::*, px, rgb, size,
 };
 
+use crate::loaders::ProjectLoader;
 use crate::state::{Environment, ProjectState, PythonInstallation, Tab};
 
 actions!(
@@ -139,23 +140,35 @@ impl MainWindowView {
         if let Ok(cwd) = std::env::current_dir() {
             let pyproject_path = cwd.join("pyproject.toml");
             if pyproject_path.exists() {
-                let mut project = ProjectState::from_path(cwd.clone());
-                project.pyproject_path = Some(pyproject_path.clone());
-
-                // Try to read project name from pyproject.toml
-                if let Ok(content) = fs_err::read_to_string(&pyproject_path) {
-                    if let Some(name) = extract_project_name(&content) {
-                        project.name = name;
+                // Use ProjectLoader for proper pyproject.toml parsing
+                match ProjectLoader::load(&cwd) {
+                    Ok(loaded) => {
+                        let mut project = ProjectState::from_path(cwd.clone());
+                        project.pyproject_path = Some(pyproject_path);
+                        project.name = loaded.name;
+                        project.version = loaded.version;
+                        project.dependencies = loaded.dependencies;
+                        project.dev_dependencies = loaded.dev_dependencies;
+                        project.has_lockfile = loaded.has_lockfile;
+                        self.project = Some(project);
                     }
-                    if let Some(version) = extract_project_version(&content) {
-                        project.version = Some(version);
+                    Err(e) => {
+                        tracing::warn!("Failed to load project: {}", e);
+                        // Fall back to basic parsing
+                        let mut project = ProjectState::from_path(cwd.clone());
+                        project.pyproject_path = Some(pyproject_path.clone());
+                        if let Ok(content) = fs_err::read_to_string(&pyproject_path) {
+                            if let Some(name) = extract_project_name(&content) {
+                                project.name = name;
+                            }
+                            if let Some(version) = extract_project_version(&content) {
+                                project.version = Some(version);
+                            }
+                        }
+                        project.has_lockfile = cwd.join("uv.lock").exists();
+                        self.project = Some(project);
                     }
                 }
-
-                // Check for lockfile
-                project.has_lockfile = cwd.join("uv.lock").exists();
-
-                self.project = Some(project);
             } else {
                 self.project = None;
             }
@@ -1074,11 +1087,22 @@ fn get_venv_python_version(venv_path: &PathBuf) -> String {
 }
 
 /// Extract project name from pyproject.toml content.
+/// Only matches within the `[project]` section.
 fn extract_project_name(content: &str) -> Option<String> {
+    let mut in_project_section = false;
+
     for line in content.lines() {
-        let line = line.trim();
-        if line.starts_with("name") {
-            if let Some(value) = line.split('=').nth(1) {
+        let trimmed = line.trim();
+
+        // Track section headers
+        if trimmed.starts_with('[') && trimmed.ends_with(']') {
+            in_project_section = trimmed == "[project]";
+            continue;
+        }
+
+        // Only match within [project] section
+        if in_project_section && trimmed.starts_with("name") {
+            if let Some(value) = trimmed.split('=').nth(1) {
                 return Some(
                     value
                         .trim()
@@ -1093,11 +1117,22 @@ fn extract_project_name(content: &str) -> Option<String> {
 }
 
 /// Extract project version from pyproject.toml content.
+/// Only matches within the `[project]` section.
 fn extract_project_version(content: &str) -> Option<String> {
+    let mut in_project_section = false;
+
     for line in content.lines() {
-        let line = line.trim();
-        if line.starts_with("version") {
-            if let Some(value) = line.split('=').nth(1) {
+        let trimmed = line.trim();
+
+        // Track section headers
+        if trimmed.starts_with('[') && trimmed.ends_with(']') {
+            in_project_section = trimmed == "[project]";
+            continue;
+        }
+
+        // Only match within [project] section
+        if in_project_section && trimmed.starts_with("version") {
+            if let Some(value) = trimmed.split('=').nth(1) {
                 return Some(
                     value
                         .trim()
@@ -1143,5 +1178,40 @@ version = "0.1.0"
             extract_project_name(content),
             Some("my-project".to_string())
         );
+    }
+
+    #[test]
+    fn test_extract_project_name_ignores_other_sections() {
+        let content = r#"
+[tool.poetry]
+name = "poetry-name"
+
+[project]
+name = "correct-name"
+version = "0.1.0"
+
+[tool.other]
+name = "other-name"
+"#;
+        assert_eq!(
+            extract_project_name(content),
+            Some("correct-name".to_string())
+        );
+    }
+
+    #[test]
+    fn test_extract_project_version_ignores_other_sections() {
+        let content = r#"
+[tool.poetry]
+version = "1.0.0"
+
+[project]
+name = "my-project"
+version = "0.2.0"
+
+[other]
+version = "3.0.0"
+"#;
+        assert_eq!(extract_project_version(content), Some("0.2.0".to_string()));
     }
 }
