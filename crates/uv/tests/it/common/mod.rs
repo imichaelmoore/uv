@@ -1107,6 +1107,14 @@ impl TestContext {
         command
     }
 
+    /// Create a `pip wheel` command for testing.
+    pub fn pip_wheel(&self) -> Command {
+        let mut command = Self::new_command();
+        command.arg("pip").arg("wheel");
+        self.add_shared_options(&mut command, true);
+        command
+    }
+
     /// Create a `pip debug` command for testing.
     pub fn pip_debug(&self) -> Command {
         let mut command = Self::new_command();

@@ -79,6 +79,9 @@ mod pip_debug;
 mod pip_tree;
 mod pip_uninstall;
 
+#[cfg(all(feature = "python", feature = "pypi"))]
+mod pip_wheel;
+
 #[cfg(feature = "pypi")]
 mod publish;
 
