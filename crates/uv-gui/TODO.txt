@@ -1,0 +1,53 @@
+UV-GUI Feature Development TODO
+================================
+
+IMPLEMENTED
+-----------
+[x] Sidebar navigation with working tabs
+[x] Cmd+Q quit
+[x] Python version detection via `uv python list`
+[x] Python installation (synchronous)
+[x] Environment detection (.venv)
+[x] Create Environment via `uv venv` (synchronous)
+[x] Project detection (name, version from pyproject.toml)
+[x] Settings toggles (Color Output, Preview Features)
+[x] Refresh button
+[x] Show Dependencies with version info from pyproject.toml + uv.lock
+[x] Package Lookup (PyPI JSON API) - search by exact package name
+[x] Add Package (`uv add <package>`) - via Package Lookup install button
+[x] Remove Package (`uv remove <package>`) - via Package Lookup remove button
+[x] Package lookup caching (5-minute TTL)
+
+TO DEVELOP (Ordered by Priority)
+--------------------------------
+
+1. Sync Project (`uv sync`)
+   Add a "Sync" button to the Project tab to sync dependencies with the lockfile.
+
+2. Lock Project (`uv lock`)
+   Add a "Lock" button to regenerate the lockfile.
+
+3. Delete Environment
+   Add a delete button on environment cards to remove virtual environments.
+
+4. Uninstall Python
+   Add an uninstall button for managed Python versions.
+
+5. Notifications System
+   The Notification type exists in state - wire it up to show success/error feedback for operations.
+
+6. Async Operations
+   Convert install_python() and create_environment() to async to prevent UI freezing.
+   Both have TODO comments in the code.
+
+7. Open Project (File Picker)
+   Allow opening a different project directory via a file picker dialog.
+
+8. Persist Settings
+   Save/load settings to a config file so they persist across sessions.
+
+9. Update Package (Single Package)
+   Update a specific package to latest version.
+
+10. Update All Packages
+    Batch update all packages with available updates.

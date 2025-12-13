@@ -551,6 +551,18 @@ pub enum Commands {
     /// Generate shell completion
     #[command(alias = "--generate-shell-completion", hide = true)]
     GenerateShellCompletion(GenerateShellCompletionArgs),
+    /// Launch the graphical user interface.
+    ///
+    /// Opens a native GUI window for managing Python packages, virtual environments,
+    /// and Python installations. The GUI provides an intuitive interface for common
+    /// uv operations without requiring command-line knowledge.
+    ///
+    /// Built with GPUI, Zed's GPU-accelerated UI framework.
+    #[command(
+        after_help = "Use `uv help gui` for more details.",
+        after_long_help = ""
+    )]
+    Gui(GuiArgs),
     /// Display documentation for a command.
     // To avoid showing the global options when displaying help for the help command, we are
     // responsible for maintaining the options using the `after_help`.
@@ -576,6 +588,20 @@ pub struct HelpArgs {
     pub no_pager: bool,
 
     pub command: Option<Vec<String>>,
+}
+
+#[derive(Args, Debug, Clone)]
+pub struct GuiArgs {
+    /// The path to a project directory to open in the GUI.
+    ///
+    /// If not specified, the current directory is used.
+    pub path: Option<std::path::PathBuf>,
+
+    /// Open the GUI in a specific view.
+    ///
+    /// Supported views: project, packages, environments, python, settings.
+    #[arg(long, value_name = "VIEW")]
+    pub view: Option<String>,
 }
 
 #[derive(Args)]

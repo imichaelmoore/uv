@@ -64,6 +64,7 @@ uv-version = { workspace = true }
 uv-virtualenv = { workspace = true }
 uv-warnings = { workspace = true }
 uv-workspace = { workspace = true, features = ["clap"] }
+uv-gui = { workspace = true, optional = true }
 
 anstream = { workspace = true }
 anyhow = { workspace = true }
@@ -213,6 +214,8 @@ slow-tests = []
 test-ecosystem = []
 # Build uvw binary on Windows
 windows-gui-bin = []
+# Build uv-gui graphical interface
+gui = ["dep:uv-gui"]
 
 [package.metadata.dist]
 dist = true
@@ -220,3 +223,7 @@ dist = true
 [[bin]]
 name = "uvw"
 required-features = ["windows-gui-bin"]
+
+[[bin]]
+name = "uv-gui"
+required-features = ["gui"]
